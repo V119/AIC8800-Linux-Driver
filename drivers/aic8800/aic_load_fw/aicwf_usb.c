@@ -1367,7 +1367,7 @@ static int aicloadfw_chipmatch(struct aic_usb_dev *usb_dev, u16 vid, u16 pid){
 		usb_dev->chipid = PRODUCT_ID_AIC8800D89X2;
 		AICWFDBG(LOGINFO, "%s USE AIC8800D89X2\r\n", __func__);
 		return 0;
-    }else if(pid == USB_DEVICE_ID_AIC_88DE && vid == USB_VENDOR_ID_AIC_V2){
+    }else if(pid == USB_DEVICE_ID_AIC_88DE && (vid == USB_VENDOR_ID_AIC_V2 || vid == USB_VENDOR_ID_AIC)){
         usb_dev->chipid = PRODUCT_ID_AIC8800DC;
         AICWFDBG(LOGINFO, "%s USE AIC8800DC (88DE)\r\n", __func__);
         return 0;
@@ -1689,7 +1689,8 @@ static int aicwf_usb_probe(struct usb_interface *intf, const struct usb_device_i
         id->idProduct == USB_DEVICE_ID_AIC_8800D81 ||
 	    id->idProduct == USB_DEVICE_ID_AIC_8800D41 ||
 	    id->idProduct == USB_DEVICE_ID_AIC_8800D81X2 ||
-	    id->idProduct == USB_DEVICE_ID_AIC_8800D89X2)){
+	    id->idProduct == USB_DEVICE_ID_AIC_8800D89X2 ||
+        id->idProduct == USB_DEVICE_ID_AIC_88DE)){
 		return -1;
 	}
 
