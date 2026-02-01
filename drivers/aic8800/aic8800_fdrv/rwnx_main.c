@@ -1873,9 +1873,9 @@ static struct rwnx_vif *rwnx_interface_add(struct rwnx_hw *rwnx_hw,
         // Check if monitor interface already exists or type is monitor
         if ((RWNX_VIF_TYPE(vif) == NL80211_IFTYPE_MONITOR) ||
            (type == NL80211_IFTYPE_MONITOR)) {
-            wiphy_err(rwnx_hw->wiphy,
-                    "Monitor+Data interface support (MON_DATA) disabled\n");
-            return NULL;
+            //wiphy_err(rwnx_hw->wiphy,
+            //        "Monitor+Data interface support (MON_DATA) disabled\n");
+            //return NULL;
         }
     }
     #endif
@@ -2503,9 +2503,9 @@ static int rwnx_cfg80211_change_iface(struct wiphy *wiphy,
             // Check if data interface already exists
             if ((vif_el != vif) &&
                (RWNX_VIF_TYPE(vif) != NL80211_IFTYPE_MONITOR)) {
-                wiphy_err(rwnx_hw->wiphy,
-                        "Monitor+Data interface support (MON_DATA) disabled\n");
-                return -EIO;
+                //wiphy_err(rwnx_hw->wiphy,
+                //        "Monitor+Data interface support (MON_DATA) disabled\n");
+                //return -EIO;
             }
         }
     }

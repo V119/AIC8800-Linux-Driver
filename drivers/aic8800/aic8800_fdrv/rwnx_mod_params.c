@@ -501,9 +501,9 @@ static int rwnx_check_fw_hw_feature(struct rwnx_hw *rwnx_hw,
 #endif /* CONFIG_RWNX_MON_DATA */
     } else {
 #ifdef CONFIG_RWNX_MON_DATA
-        wiphy_err(wiphy,
-                  "Monitor+Data interface support (MON_DATA) disabled in firmware but support compiled in driver\n");
-        res = -1;
+        //wiphy_err(wiphy,
+        //          "Monitor+Data interface support (MON_DATA) disabled in firmware but support compiled in driver\n");
+        //res = -1;
 #endif /* CONFIG_RWNX_MON_DATA */
     }
 #endif
