@@ -1264,6 +1264,12 @@ static struct aicbt_info_t aicbt_info[] = {
     {
     },//PRODUCT_ID_AIC8801
     {
+        .btmode        = AICBT_BTMODE_DEFAULT_8800d80,
+        .btport        = AICBT_BTPORT_DEFAULT,
+        .uart_baud     = AICBT_UART_BAUD_DEFAULT,
+        .uart_flowctrl = AICBT_UART_FC_DEFAULT,
+        .lpm_enable    = AICBT_LPM_ENABLE_DEFAULT,
+        .txpwr_lvl     = AICBT_TXPWR_LVL_DEFAULT_8800d80,
     },//PRODUCT_ID_AIC8800DC
     {
     },//PRODUCT_ID_AIC8800DW

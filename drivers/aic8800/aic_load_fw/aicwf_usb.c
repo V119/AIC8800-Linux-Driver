@@ -1143,6 +1143,8 @@ static int system_config(struct aic_usb_dev *usb_dev)
         return system_config_8800d80(usb_dev);
     }else if(usb_dev->chipid == PRODUCT_ID_AIC8800D80X2){
         return system_config_8800d80x2(usb_dev);
+    }else if(usb_dev->chipid == PRODUCT_ID_AIC8800DC){
+        return system_config_8800(usb_dev);
     }else{
         return -1;
     }
@@ -1772,11 +1774,13 @@ static int aicwf_usb_probe(struct usb_interface *intf, const struct usb_device_i
 		goto out_free_bus;
 	}
 
-    if (system_config(usb_dev)) {
+    ret = system_config(usb_dev);
+    if (ret) {
         goto out_free_bus;
     }
 
-    if (aicfw_download_fw(usb_dev)){
+    ret = aicfw_download_fw(usb_dev);
+    if (ret){
         goto out_free_bus;
     }
     
