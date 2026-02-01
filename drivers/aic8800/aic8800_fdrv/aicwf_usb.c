@@ -2403,6 +2403,10 @@ static int aicwf_usb_probe(struct usb_interface *intf, const struct usb_device_i
     struct aicwf_tx_priv *tx_priv = NULL;
     #endif
 
+    if (intf->cur_altsetting->desc.bInterfaceNumber != 0) {
+        return -ENODEV;
+    }
+
     usb_dev = kzalloc(sizeof(struct aic_usb_dev), GFP_ATOMIC);
 
     AICWFDBG(LOGDEBUG, "%s usb_dev:%d usb_tx_buf:%d usb_rx_buf:%d\r\n", 

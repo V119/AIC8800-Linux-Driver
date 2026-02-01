@@ -1678,6 +1678,9 @@ static int aicwf_usb_probe(struct usb_interface *intf, const struct usb_device_i
     struct aicwf_rx_priv* rx_priv = NULL;
     struct aic_usb_dev *usb_dev = NULL;
     
+    if (intf->cur_altsetting->desc.bInterfaceNumber != 0) {
+        return -ENODEV;
+    }
 
 	AICWFDBG(LOGINFO, "%s vid:0x%X pid:0x%X icl:0x%X isc:0x%X ipr:0x%X \r\n", __func__,
 		id->idVendor,
