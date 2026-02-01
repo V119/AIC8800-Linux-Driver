@@ -1367,6 +1367,10 @@ static int aicloadfw_chipmatch(struct aic_usb_dev *usb_dev, u16 vid, u16 pid){
 		usb_dev->chipid = PRODUCT_ID_AIC8800D89X2;
 		AICWFDBG(LOGINFO, "%s USE AIC8800D89X2\r\n", __func__);
 		return 0;
+    }else if(pid == USB_DEVICE_ID_AIC_88DE && vid == USB_VENDOR_ID_AIC_V2){
+        usb_dev->chipid = PRODUCT_ID_AIC8800DC;
+        AICWFDBG(LOGINFO, "%s USE AIC8800DC (88DE)\r\n", __func__);
+        return 0;
     }else{
         return -1;
     }
@@ -1655,6 +1659,8 @@ int aicfw_download_fw(struct aic_usb_dev *usb_dev)
         return aicfw_download_fw_8800d80(usb_dev);
     }else if(usb_dev->chipid == PRODUCT_ID_AIC8800D80X2){
         return aicfw_download_fw_8800d80x2(usb_dev);
+    }else if(usb_dev->chipid == PRODUCT_ID_AIC8800DC){
+        return aicfw_download_fw_8800(usb_dev);
     }else{
         return -1;
     }
@@ -1846,6 +1852,7 @@ static struct usb_device_id aicwf_usb_id_table[] = {
     {USB_DEVICE(USB_VENDOR_ID_AIC_V2, USB_DEVICE_ID_AIC_8800D80X2)},
     {USB_DEVICE(USB_VENDOR_ID_AIC_V2, USB_DEVICE_ID_AIC_8800D81X2)},
     {USB_DEVICE(USB_VENDOR_ID_AIC_V2, USB_DEVICE_ID_AIC_8800D89X2)},
+    {USB_DEVICE(USB_VENDOR_ID_AIC_V2, USB_DEVICE_ID_AIC_88DE)},
     {}
 };
 

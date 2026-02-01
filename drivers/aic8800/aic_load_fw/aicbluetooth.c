@@ -360,6 +360,8 @@ static int aic_load_firmware(u32 ** fw_buf, const char *name, struct device *dev
             len = snprintf(path, FW_PATH_MAX, "%s/%s/%s",aic_default_fw_path, "aic8800D80", name);
         } else if (usb_dev->chipid == PRODUCT_ID_AIC8800D80X2) {
             len = snprintf(path, FW_PATH_MAX, "%s/%s/%s",aic_default_fw_path, "aic8800D80X2", name);
+        } else if (usb_dev->chipid == PRODUCT_ID_AIC8800DC) {
+            len = snprintf(path, FW_PATH_MAX, "%s/%s/%s",aic_default_fw_path, "aic8800DC", name);
         }else {
             printk("%s unknown chipid %d\n", __func__, usb_dev->chipid);
         }
