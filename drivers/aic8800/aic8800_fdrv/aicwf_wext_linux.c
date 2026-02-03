@@ -211,27 +211,79 @@ static int aicwf_get_freq(struct net_device *dev,
 	return 0;
 }
 
+static int aicwf_set_mode(struct net_device *dev, struct iw_request_info *a,
+			   union iwreq_data *wrqu, char *b)
+{
+	struct rwnx_vif *rwnx_vif = netdev_priv(dev);
+	enum nl80211_iftype type;
+
+	AICWFDBG(LOGTRACE, "%s Enter, mode=%d", __func__, wrqu->mode);
+
+	/* Map WEXT mode to nl80211 type */
+	switch (wrqu->mode) {
+	case IW_MODE_MONITOR:
+		type = NL80211_IFTYPE_MONITOR;
+		break;
+	case IW_MODE_INFRA:
+		type = NL80211_IFTYPE_STATION;
+		break;
+	case IW_MODE_ADHOC:
+		type = NL80211_IFTYPE_ADHOC;
+		break;
+	case IW_MODE_MASTER:
+		type = NL80211_IFTYPE_AP;
+		break;
+	case IW_MODE_AUTO:
+		/* Already in the desired mode, just return success */
+		return 0;
+	default:
+		AICWFDBG(LOGERROR, "%s: Unsupported mode %d", __func__, wrqu->mode);
+		return -EOPNOTSUPP;
+	}
+
+	/* If already in the requested mode, return success */
+	if (rwnx_vif->wdev.iftype == type) {
+		AICWFDBG(LOGINFO, "%s: Already in mode %d", __func__, type);
+		return 0;
+	}
+
+	/* For monitor mode, we just return success since the interface
+	 * should already be configured by nl80211 interface */
+	if (type == NL80211_IFTYPE_MONITOR) {
+		AICWFDBG(LOGINFO, "%s: Monitor mode requested, interface already configured", __func__);
+		return 0;
+	}
+
+	return 0;
+}
+
 static int aicwf_get_mode(struct net_device *dev, struct iw_request_info *a,
 			   union iwreq_data *wrqu, char *b)
 {
+	struct rwnx_vif *rwnx_vif = netdev_priv(dev);
 
 	AICWFDBG(LOGTRACE, "%s Enter", __func__);
 
-	wrqu->mode = IW_MODE_AUTO;
-#if 0
-	if (check_fwstate(pmlmepriv, WIFI_STATION_STATE) == _TRUE)
+	/* Map nl80211 type to WEXT mode */
+	switch (rwnx_vif->wdev.iftype) {
+	case NL80211_IFTYPE_STATION:
 		wrqu->mode = IW_MODE_INFRA;
-	else if ((check_fwstate(pmlmepriv, WIFI_ADHOC_MASTER_STATE) == _TRUE) ||
-		 (check_fwstate(pmlmepriv, WIFI_ADHOC_STATE) == _TRUE))
-
+		break;
+	case NL80211_IFTYPE_ADHOC:
 		wrqu->mode = IW_MODE_ADHOC;
-	else if (check_fwstate(pmlmepriv, WIFI_AP_STATE) == _TRUE)
+		break;
+	case NL80211_IFTYPE_AP:
 		wrqu->mode = IW_MODE_MASTER;
-	else if (check_fwstate(pmlmepriv, WIFI_MONITOR_STATE) == _TRUE)
+		break;
+	case NL80211_IFTYPE_MONITOR:
 		wrqu->mode = IW_MODE_MONITOR;
-	else
+		break;
+	default:
 		wrqu->mode = IW_MODE_AUTO;
-#endif
+		break;
+	}
+
+	AICWFDBG(LOGTRACE, "%s: Returning mode %d for iftype %d", __func__, wrqu->mode, rwnx_vif->wdev.iftype);
 
 	return 0;
 
@@ -1151,7 +1203,7 @@ static iw_handler aic_handlers[] = {
 	NULL,					/* SIOCGIWNWID */
 	NULL,					/* SIOCSIWFREQ */
 	aicwf_get_freq,			/* SIOCGIWFREQ */
-	NULL,					/* SIOCSIWMODE */
+	aicwf_set_mode,			/* SIOCSIWMODE */
 	aicwf_get_mode,			/* SIOCGIWMODE */
 	NULL,					/* SIOCSIWSENS */
 	NULL,					/* SIOCGIWSENS */

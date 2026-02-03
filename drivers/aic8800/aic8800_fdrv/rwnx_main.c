@@ -382,6 +382,8 @@ static struct ieee80211_iface_limit rwnx_limits[] = {
       .types = BIT(NL80211_IFTYPE_STATION)},
     { .max = 1,
       .types = BIT(NL80211_IFTYPE_AP)},
+    { .max = 1,
+      .types = BIT(NL80211_IFTYPE_MONITOR)},
 #ifdef CONFIG_USE_P2P0
     { .max = 2,
 #else
@@ -8933,10 +8935,17 @@ if((g_rwnx_plat->usbdev->chipid == PRODUCT_ID_AIC8801) ||
     vif = rwnx_interface_add(rwnx_hw, "wlan%d", NET_NAME_UNKNOWN,
                                 NL80211_IFTYPE_STATION, NULL);
 
+    /*
+     * Removed separate monitor interface creation - monitor mode should be
+     * enabled by switching the station interface to monitor mode, not by
+     * creating a separate interface
+     */
+    #if 0  // Disabled CONFIG_RWNX_MON_DATA separate monitor interface
     #ifdef CONFIG_RWNX_MON_DATA
     /* Add an initial station interface */
     vif = rwnx_interface_add(rwnx_hw, "wlan%d", 1,
                                 NL80211_IFTYPE_MONITOR, NULL);
+    #endif
     #endif
 
     rtnl_unlock();
