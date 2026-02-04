@@ -48,7 +48,8 @@ const struct mac_addr mac_addr_bcst = {{0xFFFF, 0xFFFF, 0xFFFF}};
                                          NXMAC_ACCEPT_MY_UNICAST_BIT          | \
                                          NXMAC_ACCEPT_BROADCAST_BIT           | \
                                          NXMAC_ACCEPT_BEACON_BIT              | \
-                                         NXMAC_ACCEPT_PROBE_RESP_BIT            \
+                                         NXMAC_ACCEPT_PROBE_RESP_BIT          | \
+                                         NXMAC_ACCEPT_OTHER_DATA_FRAMES_BIT     \
                                         )
 
 /* Default MAC Rx filter */
@@ -2937,12 +2938,16 @@ int rwnx_send_set_filter(struct rwnx_hw *rwnx_hw, uint32_t filter)
         return -ENOMEM;
 
     /* Set parameters for the MM_SET_FILTER_REQ message */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 2, 0)
+#ifdef FIF_PROMISC_IN_BSS
     if (filter & FIF_PROMISC_IN_BSS)
         rx_filter |= NXMAC_ACCEPT_UNICAST_BIT;
 #endif
-    if (filter & FIF_ALLMULTI)
+    if (filter & FIF_ALLMULTI) {
         rx_filter |= NXMAC_ACCEPT_MULTICAST_BIT;
+        // In monitor mode (when FIF_ALLMULTI is set), also accept unicast
+        // This is needed because FIF_PROMISC_IN_BSS is not available on kernel >= 4.2
+        rx_filter |= NXMAC_ACCEPT_UNICAST_BIT;
+    }
 
     if (filter & (FIF_FCSFAIL | FIF_PLCPFAIL))
         rx_filter |= NXMAC_ACCEPT_ERROR_FRAMES_BIT;

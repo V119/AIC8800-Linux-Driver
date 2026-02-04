@@ -56,6 +56,11 @@
 #include "aicwf_wext_linux.h"
 #endif
 
+// Compatibility fix for FIF_PROMISC_IN_BSS (removed in kernel >= 4.2.0)
+#ifndef FIF_PROMISC_IN_BSS
+#define FIF_PROMISC_IN_BSS 0
+#endif
+
 #ifdef AICWF_SDIO_SUPPORT
 #include "aicwf_sdio.h"
 #endif
@@ -1449,7 +1454,7 @@ static int rwnx_open(struct net_device *dev)
         rwnx_txq_unk_vif_init(rwnx_vif);
         #endif
         #if defined(CONFIG_RWNX_MON_RXFILTER)
-        rwnx_send_set_filter(rwnx_hw, (FIF_BCN_PRBRESP_PROMISC | FIF_OTHER_BSS | FIF_PSPOLL | FIF_PROBE_REQ));
+        rwnx_send_set_filter(rwnx_hw, (FIF_PROMISC_IN_BSS | FIF_ALLMULTI | FIF_BCN_PRBRESP_PROMISC | FIF_CONTROL | FIF_OTHER_BSS | FIF_PSPOLL | FIF_PROBE_REQ));
         #endif
     }
 
@@ -2607,7 +2612,7 @@ static int rwnx_cfg80211_change_iface(struct wiphy *wiphy,
         rwnx_txq_unk_vif_init(vif);
         #endif
         #if defined(CONFIG_RWNX_MON_RXFILTER)
-        rwnx_send_set_filter(vif->rwnx_hw, (FIF_BCN_PRBRESP_PROMISC | FIF_OTHER_BSS | FIF_PSPOLL | FIF_PROBE_REQ));
+        rwnx_send_set_filter(vif->rwnx_hw, (FIF_PROMISC_IN_BSS | FIF_ALLMULTI | FIF_BCN_PRBRESP_PROMISC | FIF_CONTROL | FIF_OTHER_BSS | FIF_PSPOLL | FIF_PROBE_REQ));
         #endif
     } else {
         vif->rwnx_hw->monitor_vif = RWNX_INVALID_VIF;
@@ -4177,12 +4182,10 @@ static int rwnx_cfg80211_set_monitor_channel(struct wiphy *wiphy,
     {
         struct cfg80211_chan_def mon_chandef;
 
-        if (rwnx_hw->vif_started > 1) {
-            // In this case we just want to update the channel context index not
-            // the channel configuration
-            rwnx_chanctx_link(rwnx_vif, cfm.chan_index, NULL);
-            return -EBUSY;
-        }
+        // Allow monitor interface to change channel even when other interfaces exist
+        // This is needed for tools like aireplay-ng to work correctly
+        // Original code: if (rwnx_hw->vif_started > 1) return -EBUSY;
+        // Fix: Always allow channel change for monitor interface
 
         mon_chandef.chan = ieee80211_get_channel(wiphy, cfm.chan.prim20_freq);
         mon_chandef.center_freq1 = cfm.chan.center1_freq;
@@ -4712,15 +4715,10 @@ static int rwnx_cfg80211_get_channel(struct wiphy *wiphy,
         return -ENODATA;
     }
 
-    if (rwnx_vif->vif_index == rwnx_hw->monitor_vif)
-    {
-        //retrieve channel from firmware
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 13, 0))
-        rwnx_cfg80211_set_monitor_channel(wiphy, wdev->netdev, NULL);
-#else
-        rwnx_cfg80211_set_monitor_channel(wiphy, NULL);
-#endif
-    }
+    // For monitor interface, don't query firmware as it may return incorrect channel
+    // Just use the channel context we already have
+    // The channel context is properly maintained by rwnx_cfg80211_set_monitor_channel
+    // when iw/aireplay-ng sets the channel
 
     //Check if channel context is valid
     if (!rwnx_chanctx_valid(rwnx_hw, rwnx_vif->ch_index)){

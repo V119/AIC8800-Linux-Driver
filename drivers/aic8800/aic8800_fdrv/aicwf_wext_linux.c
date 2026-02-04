@@ -194,6 +194,8 @@ static int aicwf_get_freq(struct net_device *dev,
 			   union iwreq_data *wrqu, char *extra)
 {
 	struct rwnx_vif* rwnx_vif = netdev_priv(dev);
+	struct rwnx_hw *rwnx_hw = rwnx_vif->rwnx_hw;
+	struct rwnx_chanctx *ctxt;
 
 
 	AICWFDBG(LOGTRACE, "%s Enter", __func__);
@@ -202,6 +204,14 @@ static int aicwf_get_freq(struct net_device *dev,
 		wrqu->freq.m = rwnx_vif->sta.ap->center_freq * 100000;
 		wrqu->freq.e = 1;
 		wrqu->freq.i = ieee80211_frequency_to_channel(rwnx_vif->sta.ap->center_freq);
+	}else if (rwnx_vif->wdev.iftype == NL80211_IFTYPE_MONITOR &&
+	          rwnx_chanctx_valid(rwnx_hw, rwnx_vif->ch_index)){
+		// For monitor mode, get channel from channel context
+		// This fixes the issue where iwconfig/aireplay-ng always reported channel 1
+		ctxt = &rwnx_hw->chanctx_table[rwnx_vif->ch_index];
+		wrqu->freq.m = ctxt->chan_def.chan->center_freq * 100000;
+		wrqu->freq.e = 1;
+		wrqu->freq.i = ieee80211_frequency_to_channel(ctxt->chan_def.chan->center_freq);
 	}else{
 		wrqu->freq.m = 2412 * 100000;
 		wrqu->freq.e = 1;
